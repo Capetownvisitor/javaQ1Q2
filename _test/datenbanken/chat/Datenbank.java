@@ -14,7 +14,8 @@ public class Datenbank {
 		String errorMessage = connector.getErrorMessage();
 		if(errorMessage != null) System.err.println(errorMessage);
 	}
-	
+
+
 	public void nachrichtSenden(String pText, String pCode, String pNickname){
 		//TODO
 	}

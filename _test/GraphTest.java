@@ -334,8 +334,8 @@ public class GraphTest {
 		Vertex v1 = besuchte.getContent();
 		List<Vertex> neighbors = graph.getNeighbours(v1);
 		neighbors.toFirst();
-		Vertex kÃ¼rzesteStart = v1;
-		Vertex kÃ¼rzeste = neighbors.getContent();
+		Vertex kürzesteStart = v1;
+		Vertex kürzeste = neighbors.getContent();
 
 		for(besuchte.toFirst(); besuchte.hasAccess();besuchte.next()){
 			v1 = besuchte.getContent();
@@ -343,14 +343,14 @@ public class GraphTest {
 			for(besuchteNeighbors.toFirst(); besuchteNeighbors.hasAccess();besuchteNeighbors.next()){
 				Vertex currentUnvisitedNeighbor = besuchteNeighbors.getContent();
 				double currentWeight = graph.getEdge(v1, currentUnvisitedNeighbor).getWeight();
-				double shortestWeight = graph.getEdge(kÃ¼rzesteStart, kÃ¼rzeste).getWeight();
+				double shortestWeight = graph.getEdge(kürzesteStart, kürzeste).getWeight();
 				if(currentWeight < shortestWeight){
-					kÃ¼rzesteStart = v1;
-					kÃ¼rzeste = currentUnvisitedNeighbor;
+					kürzesteStart = v1;
+					kürzeste = currentUnvisitedNeighbor;
 				}
 			}
 		}
-		Vertex[] ergebnis = {kÃ¼rzesteStart, kÃ¼rzeste};
+		Vertex[] ergebnis = {kürzesteStart, kürzeste};
 		return ergebnis;
 	}
 
@@ -365,8 +365,8 @@ public class GraphTest {
 
 		besuchte.toFirst();
 		Vertex v1 = besuchte.getContent();
-		Vertex kÃ¼rzesteStart = new Vertex("test1");
-		Vertex kÃ¼rzeste = new Vertex("test2");
+		Vertex kürzesteStart = new Vertex("test1");
+		Vertex kürzeste = new Vertex("test2");
 		double shortestPath = Double.POSITIVE_INFINITY;
 
 		for(besuchte.toFirst(); besuchte.hasAccess();besuchte.next()){
@@ -376,13 +376,13 @@ public class GraphTest {
 				Vertex currentUnvisitedNeighbor = besuchteNeighbors.getContent();
 				double currentWeight = karte.getEdge(v1, currentUnvisitedNeighbor).getWeight();
 				if(currentWeight < shortestPath){
-					kÃ¼rzesteStart = v1;
-					kÃ¼rzeste = currentUnvisitedNeighbor;
-					shortestPath = karte.getEdge(kÃ¼rzesteStart, kÃ¼rzeste).getWeight();
+					kürzesteStart = v1;
+					kürzeste = currentUnvisitedNeighbor;
+					shortestPath = karte.getEdge(kürzesteStart, kürzeste).getWeight();
 				}
 			}
 		}
-		Vertex[] ergebnis = {kÃ¼rzesteStart, kÃ¼rzeste};
+		Vertex[] ergebnis = {kürzesteStart, kürzeste};
 		return ergebnis;
 	}
 

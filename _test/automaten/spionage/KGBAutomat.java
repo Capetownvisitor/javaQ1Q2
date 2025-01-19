@@ -4,7 +4,7 @@ import gui.GUI;
 
 public class KGBAutomat {
 	public int zustand;
-	private char[] alphabet = {'0','1','2','3','4','5','6','7','8','9'};
+	private final char[] alphabet = {'0','1','2','3','4','5','6','7','8','9'};
 	
 	public boolean imAlphabet(char pZeichen){
 		for (char a: alphabet) {
@@ -23,6 +23,29 @@ public class KGBAutomat {
 				return false;
 			}
 
+			switch (zustand) {
+				case 0:
+					if(pEingabe.charAt(i) == '0') zustand++;
+					break;
+				case 1:
+					if(pEingabe.charAt(i) == '0') zustand++;
+					else {
+						zustand = 0;
+					}
+					break;
+				case 2:
+					if(pEingabe.charAt(i) == '7') zustand++;
+					if(pEingabe.charAt(i) != '0' && pEingabe.charAt(i) != '7') {
+						zustand = 0;
+					}
+					break;
+				case 3:
+					break;
+				default:
+					System.out.println("How did we get here?");
+					break;
+			}
+			/*
 			switch (pEingabe.charAt(i)) {
 				case '0':
 					if (zustand == 0 | zustand == 1) {
@@ -42,7 +65,7 @@ public class KGBAutomat {
 					}
 					break;
 			}
-
+			*/
 			if (zustand == 3) {
 				return true;
 			}
