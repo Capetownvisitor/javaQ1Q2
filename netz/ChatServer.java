@@ -1,7 +1,5 @@
 package netz;
 
-import netz.Server;
-
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -22,19 +20,28 @@ public class ChatServer extends Server {
     }
 
     private void initUsers() {
-        User u1 = new User("Jac", "123", "none", -1, -1);
+        User u1 = new User("Jackpie", "123", "none", -1, -1);
         userList.add(u1);
         User u2 = new User("Jonass", "passwort", "none", -1, -1);
         userList.add(u2);
     }
 
-    private User getUser(String pClientIP, int pClientPort) {
+    private User getConnectedUser(String pClientIP, int pClientPort) {
         for (User u: userList){
             if (u.getIpAddress().equals(pClientIP) && u.getPort() == pClientPort){
                 return u;
             }
         }
         return null;
+    }
+    private User getUserByName(String pUsername) {
+        User result = null;
+        for (User user: userList) {
+            if (user.getNickname().equalsIgnoreCase(pUsername)) {
+                result = user;
+            }
+        }
+        return result;
     }
 
     private void logoutUser(User user) {
@@ -51,41 +58,47 @@ public class ChatServer extends Server {
         user.setState(2);
     }
 
+
     @Override
     public void processNewConnection(String pClientIP, int pClientPort) {
-        this.send(pClientIP, pClientPort, "Willkommen im Chat!");
-        System.out.println("Der Client mit der IP: " + pClientIP + " und dem Port: " + pClientPort + " hat sich verbunden.");
+        this.send(pClientIP, pClientPort, "Welcome to the Chat!");
+        this.send(pClientIP, pClientPort, "Please Log in to communicate!");
+        System.out.println("The Client with the IP: " + pClientIP + " and the Port: " + pClientPort + " has connected.");
     }
 
     @Override
     public void processMessage(String pClientIP, int pClientPort, String pMessage) {
-        // Im folgenden wird die Nachricht verarbeitet nach dem Vorgegebenen Protokoll
+        // Process Message as per the Rules set by the Protocol
 
-        // Wenn die Nachricht leer ist, wird nichts gemacht
+        // If message is empty Return
         if (pMessage.length() <= 0) return;
-
-        // look up Online Users
-
+        // Split the input into parts so that you can work through it
         ArrayList<String> messageParts = new ArrayList<String>();
         Collections.addAll(messageParts, pMessage.split(" "));
 
         switch (messageParts.get(0).toUpperCase()){
             case "QUIT":
                 // Check if user is currently logging in or was logged in.
-                User quitUser = getUser(pClientIP, pClientPort);
+                User quitUser = getConnectedUser(pClientIP, pClientPort);
                 if (quitUser != null) {
                     // User was found and is being logged out
                     logoutUser(quitUser);
                 }
 
-                this.send(pClientIP, pClientPort, "+OK Auf Wiedersehen!");
+                this.send(pClientIP, pClientPort, "+OK Bye!");
                 this.closeConnection(pClientIP, pClientPort);
                 break;
             case "HELP":
                 // Add checks if a command has been added after help
-                this.send(pClientIP, pClientPort, "+OK Folgende Befehle sind verfügbar: ");
-                this.send(pClientIP, pClientPort, "QUIT: Beendet die Verbindung");
-                this.send(pClientIP, pClientPort, "HELP: Zeigt diese Hilfe an");
+                this.send(pClientIP, pClientPort, "+OK Supported commands are: ");
+                this.send(pClientIP, pClientPort, "QUIT: quit the connection.");
+                this.send(pClientIP, pClientPort, "HELP: shows this help.");
+                this.send(pClientIP, pClientPort, "LOGIN <username>: Log in as this user.");
+                this.send(pClientIP, pClientPort, "PASS <password>: Add password if asked to do so.");
+                this.send(pClientIP, pClientPort, "SEND <@gm / @pm / @all> < groupname / username> <message>: Send message to Groups or users");
+                this.send(pClientIP, pClientPort, "LOGOUT: log out.");
+                this.send(pClientIP, pClientPort, "ADD <@g / @p> < group-Password >: Add users or groups to your chats");
+                this.send(pClientIP, pClientPort, "ARCHIVE: Currently unsupported");
                 break;
             case "LOGIN":
                 // Check if the Credentials match any User
@@ -116,10 +129,9 @@ public class ChatServer extends Server {
                         }
                     }
                 }
-
                 break;
             case "PASS":
-                User passUser = getUser(pClientIP, pClientPort);
+                User passUser = getConnectedUser(pClientIP, pClientPort);
                 if (passUser == null) {
                     send(pClientIP, pClientPort, "-ERR User not found");
                     break;
@@ -141,7 +153,7 @@ public class ChatServer extends Server {
                 break;
             case "LOGOUT":
                 // Log the USer out
-                User logoutUser = getUser(pClientIP, pClientPort);
+                User logoutUser = getConnectedUser(pClientIP, pClientPort);
                 if (logoutUser != null) {
                     send(pClientIP, pClientPort, "+OK User Logged out.");
                     logoutUser(logoutUser);
@@ -156,10 +168,75 @@ public class ChatServer extends Server {
                 this.send(pClientIP, pClientPort, "-ERR Not Implemented yet!");
                 break;
             case "SEND":
-                // Send a message to a recipient.
+                //TODO: Send a message to a recipient.
                 // Can be a single Person
                 // Can be a specified Group, the User belongs to
-                this.send(pClientIP, pClientPort, "-ERR Not Implemented yet!");
+
+                // Check if User is Connected / Logged In
+                User sendUser = getConnectedUser(pClientIP, pClientPort);
+
+                if (sendUser == null || sendUser.getState() < 2) {
+                    this.send(pClientIP, pClientPort, "-ERR You have to be logged in to use this feature.");
+                    break;
+                }
+                // Check if Command is long enough
+                if (messageParts.size() < 3){
+                    this.send(pClientIP, pClientPort, "-ERR Usage: SEND <@gm / @pm / @all> < groupname / username> <message>");
+                    break;
+                }
+                // Prefix
+                String prefix = "<" + sendUser.getNickname() + ">: ";
+
+                // Go through types of messages
+                switch (messageParts.get(1).toUpperCase()) {
+                    case "@GM":
+                        this.send(pClientIP, pClientPort, "-ERR Currently not Supported.");
+                        break;
+                    case "@PM":
+                        // Private Message
+                        if (messageParts.size() < 4) {
+                            this.send(pClientIP, pClientPort, "-ERR Not Enough Parameters.");
+                            this.send(pClientIP, pClientPort, "Usage: SEND <@gm / @pm / @all> < groupname / username> <message>");
+                            break;
+                        }
+                        // Check if a username was added
+                        User fromUser = getConnectedUser(pClientIP, pClientPort);
+                        User toUser = null;
+                        String toUsername = messageParts.get(2);
+                        // check if the user exists
+                        toUser = getUserByName(toUsername);
+                        if (toUser == null) {
+                            this.send(pClientIP, pClientPort, "-ERR User not found");
+                            break;
+                        }
+                        // check if the user is online
+                        if (toUser.getIpAddress().equalsIgnoreCase("none") || toUser.getPort() < 0) {
+                            this.send(pClientIP, pClientPort, "-ERR User is not online.");
+                            break;
+                        }
+                        // send message
+
+                        // build message
+                        StringBuilder privateMsg = new StringBuilder();
+                        for (int i = 3; i < messageParts.size(); i++){
+                            privateMsg.append(messageParts.get(i)).append(" ");
+                        }
+
+                        this.send(toUser.getIpAddress(), toUser.getPort(),prefix  + privateMsg.toString());
+                        break;
+                    case "@ALL":
+                        StringBuilder allMsg = new StringBuilder();
+                        for (int i = 2; i < messageParts.size(); i++){
+                            allMsg.append(messageParts.get(i)).append(" ");
+                        }
+                        this.sendToAll(prefix + allMsg.toString());
+
+                        break;
+                    default:
+                        send(pClientIP, pClientPort, "-ERR  Usage: SEND <@gm / @pm / @all> < groupname / username / > <message>");
+                        break;
+                }
+
                 break;
             case "ARCHIVE":
                 // Check for the Permissions of the User if they may read the messages
@@ -176,7 +253,12 @@ public class ChatServer extends Server {
 
     @Override
     public void processClosingConnection(String pClientIP, int pClientPort) {
-
+        User quitUser = getConnectedUser(pClientIP, pClientPort);
+        if (quitUser != null) {
+            // User was found and is being logged out
+            logoutUser(quitUser);
+        }
+        System.out.println("The Client with the IP: " + pClientIP + " and the Port: " + pClientPort + " has left the Server.");
     }
 
     public static void main(String[] args)  {
