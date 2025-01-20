@@ -58,6 +58,10 @@ public class User {
         return nickname;
     }
 
+    public String getPassword() {
+        return pw;
+    }
+
     public int getId() {
         return id;
     }
