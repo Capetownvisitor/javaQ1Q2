@@ -61,8 +61,8 @@ public class ChatServer extends Server {
 
     @Override
     public void processNewConnection(String pClientIP, int pClientPort) {
-        this.send(pClientIP, pClientPort, "Welcome to the Chat!");
-        this.send(pClientIP, pClientPort, "Please Log in to communicate!");
+        this.send(pClientIP, pClientPort, ANSIColors.GREEN + "Welcome to the Chat!");
+        this.send(pClientIP, pClientPort, ANSIColors.GREEN + "Please Log in to communicate!");
         System.out.println("The Client with the IP: " + pClientIP + " and the Port: " + pClientPort + " has connected.");
     }
 
@@ -102,10 +102,11 @@ public class ChatServer extends Server {
                 break;
             case "LOGIN":
                 // Check if the Credentials match any User
-                if (messageParts.size() != 2){
+                if (messageParts.size() < 2){
                     this.send(pClientIP, pClientPort, "-ERR Wrong amount of Parameters!");
                     this.send(pClientIP, pClientPort, "Use: LOGIN <username>");
-                }else {
+                    this.send(pClientIP, pClientPort, "Or: LOGIN <username> <password>");
+                }if( messageParts.size() == 2 ) {
                     // go through the List to find the User
                     User loginUser = null;
                     for (User u : userList) {
@@ -128,6 +129,21 @@ public class ChatServer extends Server {
                             this.send(pClientIP, pClientPort, "+OK Please Provide the Password for " + loginUser.getNickname());
                         }
                     }
+                }else if (messageParts.size() == 3){
+                    if (getConnectedUser(pClientIP, pClientPort) != null && getConnectedUser(pClientIP, pClientPort).getState() > 0) {
+                        this.send(pClientIP, pClientPort, "-ERR You must be logged out to log in.");
+                    }
+                    for (User u: userList){
+                        if (u.getNickname().equalsIgnoreCase(messageParts.get(1)) && u.getPassword().equalsIgnoreCase(messageParts.get(2))){
+                            // auth user
+                            u.setState(2);
+                            this.send(pClientIP, pClientPort, "+OK You have been authenticated and are Logged in!");
+                        }
+                }
+                }else {
+                    this.send(pClientIP, pClientPort, "-ERR Wrong amount of Parameters!");
+                    this.send(pClientIP, pClientPort, "Use: LOGIN <username>");
+                    this.send(pClientIP, pClientPort, "Or: LOGIN <username> <password>");
                 }
                 break;
             case "PASS":
@@ -136,6 +152,10 @@ public class ChatServer extends Server {
                     send(pClientIP, pClientPort, "-ERR User not found");
                     break;
                 }else {
+                    if (passUser.getState() != 1) {
+                        this.send(pClientIP, pClientPort, "-ERR Supply a username first;");
+                        break;
+                    }
                     if (messageParts.size() != 2){
                         this.send(pClientIP, pClientPort, "-ERR Wrong amount of Parameters!");
                         this.send(pClientIP, pClientPort, "Use: PASS <password>");
@@ -159,7 +179,7 @@ public class ChatServer extends Server {
                     logoutUser(logoutUser);
                     break;
                 }else {
-                    send(pClientIP, pClientPort, "-ERR User not found.");
+                    send(pClientIP, pClientPort, "-ERR Not logged in.");
                 }
                 break;
             case "ADD":
