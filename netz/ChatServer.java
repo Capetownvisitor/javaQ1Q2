@@ -62,7 +62,7 @@ public class ChatServer extends Server {
     @Override
     public void processNewConnection(String pClientIP, int pClientPort) {
         this.send(pClientIP, pClientPort, ANSIColors.GREEN + "Welcome to the Chat!");
-        this.send(pClientIP, pClientPort, ANSIColors.GREEN + "Please Log in to communicate!");
+        this.send(pClientIP, pClientPort, "Please Log in to communicate!");
         System.out.println("The Client with the IP: " + pClientIP + " and the Port: " + pClientPort + " has connected.");
     }
 
@@ -103,7 +103,7 @@ public class ChatServer extends Server {
             case "LOGIN":
                 // Check if the Credentials match any User
                 if (messageParts.size() < 2){
-                    this.send(pClientIP, pClientPort, "-ERR Wrong amount of Parameters!");
+                    this.send(pClientIP, pClientPort, "-ERR 400 Wrong amount of Parameters!");
                     this.send(pClientIP, pClientPort, "Use: LOGIN <username>");
                     this.send(pClientIP, pClientPort, "Or: LOGIN <username> <password>");
                 }if( messageParts.size() == 2 ) {
@@ -114,7 +114,7 @@ public class ChatServer extends Server {
                     }
                     // Check if a user was found
                     if (loginUser == null){
-                        this.send(pClientIP, pClientPort, "-ERR User does not Exist");
+                        this.send(pClientIP, pClientPort, "-ERR 401 User does not Exist");
                     }else {
                         // check if the user is already logged in:
 
@@ -122,7 +122,7 @@ public class ChatServer extends Server {
                         {
                             // optionally tell the User what they should do right now
                             if (loginUser.getState() == 1) this.send(pClientIP, pClientPort, "-ERR Can't Login, Please provide the Password");
-                            else this.send(pClientIP, pClientPort, "-ERR Cant Login, already logged in");
+                            else this.send(pClientIP, pClientPort, "-ERR 406 Cant Login, already logged in");
                         }else {
                             // Take User one Step further to now require Password, and save the IP and Port to the USer Object
                             loginUser(loginUser, pClientIP, pClientPort);
@@ -131,17 +131,22 @@ public class ChatServer extends Server {
                     }
                 }else if (messageParts.size() == 3){
                     if (getConnectedUser(pClientIP, pClientPort) != null && getConnectedUser(pClientIP, pClientPort).getState() > 0) {
-                        this.send(pClientIP, pClientPort, "-ERR You must be logged out to log in.");
+                        this.send(pClientIP, pClientPort, "-ERR 406 You must be logged out to log in.");
                     }
+                    User loginUser = null;
                     for (User u: userList){
                         if (u.getNickname().equalsIgnoreCase(messageParts.get(1)) && u.getPassword().equalsIgnoreCase(messageParts.get(2))){
                             // auth user
-                            u.setState(2);
+                            loginUser = u;
+                            loginUser.setState(2);
                             this.send(pClientIP, pClientPort, "+OK You have been authenticated and are Logged in!");
                         }
-                }
+                    }
+                    if (loginUser == null){
+                        this.send(pClientIP, pClientPort, "-ERR 401 USER NOT FOUND");
+                    }
                 }else {
-                    this.send(pClientIP, pClientPort, "-ERR Wrong amount of Parameters!");
+                    this.send(pClientIP, pClientPort, "-ERR 400 Wrong amount of Parameters!");
                     this.send(pClientIP, pClientPort, "Use: LOGIN <username>");
                     this.send(pClientIP, pClientPort, "Or: LOGIN <username> <password>");
                 }
@@ -149,7 +154,7 @@ public class ChatServer extends Server {
             case "PASS":
                 User passUser = getConnectedUser(pClientIP, pClientPort);
                 if (passUser == null) {
-                    send(pClientIP, pClientPort, "-ERR User not found");
+                    send(pClientIP, pClientPort, "-ERR 401 User not found");
                     break;
                 }else {
                     if (passUser.getState() != 1) {
@@ -157,7 +162,7 @@ public class ChatServer extends Server {
                         break;
                     }
                     if (messageParts.size() != 2){
-                        this.send(pClientIP, pClientPort, "-ERR Wrong amount of Parameters!");
+                        this.send(pClientIP, pClientPort, "-ERR 400 Wrong amount of Parameters!");
                         this.send(pClientIP, pClientPort, "Use: PASS <password>");
                     }else {
                         // Check if the Password matches the User
@@ -179,13 +184,13 @@ public class ChatServer extends Server {
                     logoutUser(logoutUser);
                     break;
                 }else {
-                    send(pClientIP, pClientPort, "-ERR Not logged in.");
+                    send(pClientIP, pClientPort, "-ERR 402 Not logged in.");
                 }
                 break;
             case "ADD":
                 // Lets the User "Subscribe" to different Groups.
                 // If the Group has a Password ask for the password to join the Group
-                this.send(pClientIP, pClientPort, "-ERR Not Implemented yet!");
+                this.send(pClientIP, pClientPort, "-ERR 500 Not Implemented yet!");
                 break;
             case "SEND":
                 //TODO: Send a message to a recipient.
@@ -196,12 +201,12 @@ public class ChatServer extends Server {
                 User sendUser = getConnectedUser(pClientIP, pClientPort);
 
                 if (sendUser == null || sendUser.getState() < 2) {
-                    this.send(pClientIP, pClientPort, "-ERR You have to be logged in to use this feature.");
+                    this.send(pClientIP, pClientPort, "-ERR 402 You have to be logged in to use this feature.");
                     break;
                 }
                 // Check if Command is long enough
                 if (messageParts.size() < 3){
-                    this.send(pClientIP, pClientPort, "-ERR Usage: SEND <@gm / @pm / @all> < groupname / username> <message>");
+                    this.send(pClientIP, pClientPort, "-ERR 400 Usage: SEND <@gm / @pm / @all> < groupname / username> <message>");
                     break;
                 }
                 // Prefix
@@ -210,12 +215,12 @@ public class ChatServer extends Server {
                 // Go through types of messages
                 switch (messageParts.get(1).toUpperCase()) {
                     case "@GM":
-                        this.send(pClientIP, pClientPort, "-ERR Currently not Supported.");
+                        this.send(pClientIP, pClientPort, "-ERR 500 Currently not Supported.");
                         break;
                     case "@PM":
                         // Private Message
                         if (messageParts.size() < 4) {
-                            this.send(pClientIP, pClientPort, "-ERR Not Enough Parameters.");
+                            this.send(pClientIP, pClientPort, "-ERR 400 Not Enough Parameters.");
                             this.send(pClientIP, pClientPort, "Usage: SEND <@gm / @pm / @all> < groupname / username> <message>");
                             break;
                         }
@@ -226,12 +231,12 @@ public class ChatServer extends Server {
                         // check if the user exists
                         toUser = getUserByName(toUsername);
                         if (toUser == null) {
-                            this.send(pClientIP, pClientPort, "-ERR User not found");
+                            this.send(pClientIP, pClientPort, "-ERR 401 User not found");
                             break;
                         }
                         // check if the user is online
                         if (toUser.getIpAddress().equalsIgnoreCase("none") || toUser.getPort() < 0) {
-                            this.send(pClientIP, pClientPort, "-ERR User is not online.");
+                            this.send(pClientIP, pClientPort, "-ERR 405 User is not online.");
                             break;
                         }
                         // send message
@@ -253,17 +258,17 @@ public class ChatServer extends Server {
 
                         break;
                     default:
-                        send(pClientIP, pClientPort, "-ERR  Usage: SEND <@gm / @pm / @all> < groupname / username / > <message>");
+                        send(pClientIP, pClientPort, "-ERR 401 Usage: SEND <@gm / @pm / @all> < groupname / username / > <message>");
                         break;
                 }
 
                 break;
             case "ARCHIVE":
                 // Check for the Permissions of the User if they may read the messages
-                this.send(pClientIP, pClientPort, "-ERR Not Implemented yet!");
+                this.send(pClientIP, pClientPort, "-ERR 500 Not Implemented yet!");
                 break;
             default:
-                this.send(pClientIP, pClientPort, "-ERR Unbekannter Befehl: " + messageParts.get(0));
+                this.send(pClientIP, pClientPort, "-ERR 404 Unbekannter Befehl: " + messageParts.get(0));
                 this.send(pClientIP, pClientPort, "Folgende Befehle sind verfügbar: ");
                 this.send(pClientIP, pClientPort, "quit: Beendet die Verbindung");
                 this.send(pClientIP, pClientPort, "help: Zeigt diese Hilfe an");

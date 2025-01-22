@@ -1,0 +1,16 @@
+.root {
+    -fx-background-color: #111111;
+}
+
+#labelHeader {
+    -fx-font-size: 20px;
+    -fx-font-family: "Lucida Console", "Lucida Grande", sans-serif;
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: bold;
+    -fx-alignment: center;
+}
+
+#labelText {
+    -fx-font-size: 60px;
+}
+
