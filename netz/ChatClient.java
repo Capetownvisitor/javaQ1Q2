@@ -1,12 +1,19 @@
 package netz;
 
+import netz.ClientGUI.ChatApplication;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 
 public class ChatClient extends Client{
-    public ChatClient(String pServerIP, int pServerPort) throws IOException {
+
+    private ChatApplication app;
+    private boolean isLoggedIn = false;
+
+    public ChatClient(String pServerIP, int pServerPort, ChatApplication app) throws IOException {
         super(pServerIP, pServerPort);
+        this.app = app;
     }
 
     @Override
@@ -71,7 +78,11 @@ public class ChatClient extends Client{
                         // OK
                         break;
                     case "201":
-                        // OK
+                        // OK logged in
+                        System.out.println("DEBUG: LOG IN WAS SUCCESSFULL");
+                        this.setLoggedIn(true);
+                        //app.loggedIn = true;
+                        app.confirmLogin();
                         break;
                     default:
                         break;
@@ -94,4 +105,25 @@ public class ChatClient extends Client{
         - Add the functionality to Send a message -> Enum over all the types of recipients ?
      */
 
+    public void login(String username, String password) {
+        System.out.println("DEBUG: Sending login: username: " + username + " password: " + password);
+        this.send("LOGIN " + username + " " + password);
+    }
+
+    public void logout() {
+        this.send("LOGOUT");
+    }
+
+    public void quit() {
+        this.send("QUIT");
+    }
+
+
+    public boolean isLoggedIn() {
+        return isLoggedIn;
+    }
+
+    public void setLoggedIn(boolean loggedIn) {
+        isLoggedIn = loggedIn;
+    }
 }

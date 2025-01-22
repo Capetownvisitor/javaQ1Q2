@@ -62,7 +62,7 @@ public class ChatServer extends Server {
     @Override
     public void processNewConnection(String pClientIP, int pClientPort) {
         this.send(pClientIP, pClientPort, ANSIColors.GREEN + "Welcome to the Chat!");
-        this.send(pClientIP, pClientPort, "Please Log in to communicate!");
+        this.send(pClientIP, pClientPort, "Please Log in to communicate!" + ANSIColors.RESET);
         System.out.println("The Client with the IP: " + pClientIP + " and the Port: " + pClientPort + " has connected.");
     }
 
@@ -126,7 +126,7 @@ public class ChatServer extends Server {
                         }else {
                             // Take User one Step further to now require Password, and save the IP and Port to the USer Object
                             loginUser(loginUser, pClientIP, pClientPort);
-                            this.send(pClientIP, pClientPort, "+OK Please Provide the Password for " + loginUser.getNickname());
+                            this.send(pClientIP, pClientPort, "+OK 203 Please Provide the Password for " + loginUser.getNickname());
                         }
                     }
                 }else if (messageParts.size() == 3){
@@ -139,7 +139,7 @@ public class ChatServer extends Server {
                             // auth user
                             loginUser = u;
                             loginUser.setState(2);
-                            this.send(pClientIP, pClientPort, "+OK You have been authenticated and are Logged in!");
+                            this.send(pClientIP, pClientPort, "+OK 201 You have been authenticated and are Logged in!");
                         }
                     }
                     if (loginUser == null){
@@ -167,7 +167,7 @@ public class ChatServer extends Server {
                     }else {
                         // Check if the Password matches the User
                         if (messageParts.get(1).equals(passUser.getPassword())) {
-                            this.send(pClientIP, pClientPort, "+OK You have been authenticated and are Logged in!");
+                            this.send(pClientIP, pClientPort, "+OK 201 You have been authenticated and are Logged in!");
                             authenticateUser(passUser);
                         }else {
                             this.send(pClientIP, pClientPort, "-ERR Password Incorrect.");
