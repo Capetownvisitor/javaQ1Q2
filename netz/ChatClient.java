@@ -11,8 +11,14 @@ public class ChatClient extends Client{
     private ChatApplication app;
     private boolean isLoggedIn = false;
 
+    private String nickname;
+    private String serverIP;
+    private int serverPort;
+
     public ChatClient(String pServerIP, int pServerPort, ChatApplication app) throws IOException {
         super(pServerIP, pServerPort);
+        this.serverIP = pServerIP;
+        this.serverPort = pServerPort;
         this.app = app;
     }
 
@@ -75,11 +81,17 @@ public class ChatClient extends Client{
                 }
                 switch (messageParts.get(1)){
                     case "200":
-                        // OK
+                        // OK connected to the Server
+                        app.confirmConnection();
                         break;
                     case "201":
                         // OK logged in
-                        System.out.println("DEBUG: LOG IN WAS SUCCESSFULL");
+                        if (messageParts.size() < 3) {
+                            System.out.println("Server response not informational enough, missing name: " + pMessage);
+                            return;
+                        }
+                        String nickname = messageParts.get(2);
+                        this.nickname = nickname;
                         this.setLoggedIn(true);
                         //app.loggedIn = true;
                         app.confirmLogin();
@@ -106,7 +118,6 @@ public class ChatClient extends Client{
      */
 
     public void login(String username, String password) {
-        System.out.println("DEBUG: Sending login: username: " + username + " password: " + password);
         this.send("LOGIN " + username + " " + password);
     }
 
@@ -118,7 +129,6 @@ public class ChatClient extends Client{
         this.send("QUIT");
     }
 
-
     public boolean isLoggedIn() {
         return isLoggedIn;
     }
@@ -126,4 +136,17 @@ public class ChatClient extends Client{
     public void setLoggedIn(boolean loggedIn) {
         isLoggedIn = loggedIn;
     }
+
+    public int getServerPort() {
+        return serverPort;
+    }
+
+    public String getServerIP() {
+        return serverIP;
+    }
+
+    public String getNickname() {
+        return nickname;
+    }
+
 }

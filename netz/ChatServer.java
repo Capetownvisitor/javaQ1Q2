@@ -49,10 +49,10 @@ public class ChatServer extends Server {
         user.setIpAddress("none");
         user.setPort(-1);
     }
-    private void loginUser(User user, String pClientIP, int pClientPort) {
+    private void loginUser(User user, String pClientIP, int pClientPort, int pState) {
         user.setIpAddress(pClientIP);
         user.setPort(pClientPort);
-        user.setState(1);
+        user.setState(pState);
     }
     private void authenticateUser(User user) {
         user.setState(2);
@@ -61,7 +61,8 @@ public class ChatServer extends Server {
 
     @Override
     public void processNewConnection(String pClientIP, int pClientPort) {
-        this.send(pClientIP, pClientPort, ANSIColors.GREEN + "Welcome to the Chat!");
+        this.send(pClientIP, pClientPort, ANSIColors.GREEN);
+        this.send(pClientIP, pClientPort, "+OK 200 Welcome to the Chat!");
         this.send(pClientIP, pClientPort, "Please Log in to communicate!" + ANSIColors.RESET);
         System.out.println("The Client with the IP: " + pClientIP + " and the Port: " + pClientPort + " has connected.");
     }
@@ -125,7 +126,7 @@ public class ChatServer extends Server {
                             else this.send(pClientIP, pClientPort, "-ERR 406 Cant Login, already logged in");
                         }else {
                             // Take User one Step further to now require Password, and save the IP and Port to the USer Object
-                            loginUser(loginUser, pClientIP, pClientPort);
+                            loginUser(loginUser, pClientIP, pClientPort, 1);
                             this.send(pClientIP, pClientPort, "+OK 203 Please Provide the Password for " + loginUser.getNickname());
                         }
                     }
@@ -137,9 +138,10 @@ public class ChatServer extends Server {
                     for (User u: userList){
                         if (u.getNickname().equalsIgnoreCase(messageParts.get(1)) && u.getPassword().equalsIgnoreCase(messageParts.get(2))){
                             // auth user
+                            this.loginUser(u, pClientIP, pClientPort, 2);
                             loginUser = u;
-                            loginUser.setState(2);
-                            this.send(pClientIP, pClientPort, "+OK 201 You have been authenticated and are Logged in!");
+                            //loginUser.setState(2);
+                            this.send(pClientIP, pClientPort, "+OK 201 " + u.getNickname() + " You have been authenticated and are Logged in!");
                         }
                     }
                     if (loginUser == null){

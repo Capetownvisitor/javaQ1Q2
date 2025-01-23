@@ -8,17 +8,20 @@ import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import netz.ChatClient;
+import netz.Client;
 import netz.ClientGUI.Controller.ChatController;
 import netz.ClientGUI.Controller.ConnectionController;
 import netz.ClientGUI.Controller.LoginController;
 
 import java.io.IOException;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 public class ChatApplication extends Application {
 
     private Stage primaryStage;
     private ChatClient client = null;
+    ChatController chatController = null;
 
     public void setPrimaryStage(Stage primaryStage){
         this.primaryStage = primaryStage;
@@ -40,6 +43,7 @@ public class ChatApplication extends Application {
         Scene scene = new Scene(root);
         this.primaryStage.setScene(scene);
         this.primaryStage.setTitle("Chat App");
+        this.primaryStage.setResizable(false);
         this.primaryStage.getIcons().add(icon);
         this.primaryStage.show();
     }
@@ -52,13 +56,25 @@ public class ChatApplication extends Application {
         try {
             this.client = new ChatClient(pServerIP, pServerPort, this);
             // TODO successfully connected to the Server, switch Scenes to the Login.
-            FXMLLoader loader = changeScene("login");
-            LoginController logController = loader.getController();
-            logController.setMainApp(this);
+
         }catch (Exception e){
             // TODO: Add the gui error
             e.printStackTrace();
             this.client = null;
+        }
+    }
+
+    public void confirmConnection() {
+        try {
+            changeScene("login", loader -> {
+                LoginController logController = loader.getController();
+                logController.setMainApp(this);
+            });
+            // FIXME:
+            // LoginController logController = loader.getController();
+            // logController.setMainApp(this);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -72,28 +88,60 @@ public class ChatApplication extends Application {
     }
 
     public void confirmLogin() {
-        System.out.println("DEBUG: TRIED TO CONFIRM LOGIN");
-
         // info: switch the scene
         try {
-            FXMLLoader loader = changeScene("chat");
-            // TODO: Fix this because of runlater it
-            ChatController chatController = loader.getController();
-            chatController.setMainApp(this);
+            changeScene("chat", loader -> {
+                Platform.runLater(() -> {
+                    try {
+                        this.chatController = loader.getController();
+                        this.chatController.setMainApp(this);
+                        this.initChat();
+                    }catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                });
+            });
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public FXMLLoader changeScene(String fxmlFile) throws IOException {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("./resources/fxml/" + fxmlFile + ".fxml"));
-        Parent root = loader.load();
-        Scene scene = new Scene(root);
+    private void initChat() {
+        String username = this.client.getNickname();
+        String serverIP = this.client.getServerIP();
+        int serverPort = this.client.getServerPort();
+
+        this.chatController.initChat(username, serverIP, serverPort);
+    }
+
+    public void changeScene(String fxmlFile, Consumer<FXMLLoader> callback) throws IOException {
         Platform.runLater(() -> {
-            this.primaryStage.setScene(scene);
-            this.primaryStage.show();
+            try {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("./resources/fxml/" + fxmlFile + ".fxml"));
+                Parent root = loader.load();
+                Scene scene = new Scene(root);
+
+                this.primaryStage.setScene(scene);
+                this.primaryStage.show();
+                callback.accept(loader);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         });
-        return loader;
+
+    }
+
+    public void reconnect() {
+        try {
+            this.client.quit();
+            this.client = null;
+            this.changeScene("connect", loader -> {
+                ConnectionController connectionController = loader.getController();
+                connectionController.setMainApp(this);
+            });
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public static void main(String[] args) {
