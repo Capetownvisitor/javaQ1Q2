@@ -10,6 +10,7 @@ public class ChatClient extends Client{
 
     private ChatApplication app;
     private boolean isLoggedIn = false;
+    private boolean isReadingChat = false;
 
     private String nickname;
     private String serverIP;
@@ -37,85 +38,112 @@ public class ChatClient extends Client{
             return;
         }
 
-        switch (messageParts.getFirst()) {
-            case "-ERR":
-                // handle the Error
-                if (messageParts.size() < 2) {
-                    System.out.println("Server response not informational enough: " + pMessage);
-                    return;
-                }
-                switch (messageParts.get(1)){
-                    case "400":
-                        //info wrong amount of parameters
-                        break;
-                    case "401":
-                        //info incorrect parameters
-                        break;
-                    case "402":
-                        //info not logged in
-                        break;
-                    case "403":
-                        //info no permission
-                        break;
-                    case "404":
-                        //info command unknown
-                        break;
-                    case "405":
-                        //info user not online
-                        break;
-                    case "406":
-                        //info user must be logged out
-                        break;
-                    case "500":
-                        //info Not implemented yet
-                        break;
-                    default:
-                        // No error code provided
-                        break;
-                }
-                break;
-            case "+OK":
-                if (messageParts.size() < 2) {
-                    System.out.println("Server response not informational enough: " + pMessage);
-                    return;
-                }
-                switch (messageParts.get(1)){
-                    case "200":
-                        // OK connected to the Server
-                        app.confirmConnection();
-                        break;
-                    case "201":
-                        // OK logged in
-                        if (messageParts.size() < 3) {
-                            System.out.println("Server response not informational enough, missing name: " + pMessage);
-                            return;
+        if (!isReadingChat) {
+            switch (messageParts.getFirst()) {
+                case "-ERR":
+                    // handle the Error
+                    if (messageParts.size() < 2) {
+                        System.out.println("Server response not informational enough: " + pMessage);
+                        return;
+                    }
+                    switch (messageParts.get(1)) {
+                        case "400":
+                            //info wrong amount of parameters
+                            break;
+                        case "401":
+                            //info incorrect parameters
+                            break;
+                        case "402":
+                            //info not logged in
+                            break;
+                        case "403":
+                            //info no permission
+                            break;
+                        case "404":
+                            //info command unknown
+                            break;
+                        case "405":
+                            //info user not online
+                            break;
+                        case "406":
+                            //info user must be logged out
+                            break;
+                        case "500":
+                            //info Not implemented yet
+                            break;
+                        default:
+                            // No error code provided
+                            break;
+                    }
+                    break;
+                case "+OK":
+                    if (messageParts.size() < 2) {
+                        System.out.println("Server response not informational enough: " + pMessage);
+                        return;
+                    }
+                    switch (messageParts.get(1)) {
+                        case "200":
+                            // OK connected to the Server
+                            app.confirmConnection();
+                            break;
+                        case "201":
+                            // OK logged in
+                            if (messageParts.size() < 3) {
+                                System.out.println("Server response not informational enough, missing name: " + pMessage);
+                                return;
+                            }
+                            String nickname = messageParts.get(2);
+                            this.nickname = nickname;
+                            this.setLoggedIn(true);
+                            //app.loggedIn = true;
+                            app.confirmLogin();
+                            break;
+                        default:
+                            break;
+                    }
+                    // handle the Okay
+                    break;
+                default:
+                    // check if it was a Message
+                    if (messageParts.size() > 2 && messageParts.get(0).startsWith("<") && messageParts.get(0).endsWith(">:")) {
+                        // Info: get Channel -> [channelID] <nickname>: message
+                        try {
+
+                            // Get the name from the message
+                            String senderName = NameExtractor.extractName(messageParts.get(0));
+
+                            // Get the Message from the Text
+                            StringBuilder text = new StringBuilder();
+                            for (int i = 2; i<messageParts.size();i++){
+                                text.append(messageParts.get(i) + " ");
+                            }
+                            Message message = new Message(senderName, text.toString());
+
+                            // Get the channel id from the message
+                            String channelIDString = NameExtractor.extractChannelID(messageParts.get(1));
+                            int channelID = Integer.parseInt(channelIDString);
+
+                            app.recieveMessage(message, channelID);
+                        } catch (Exception e){
+                            e.printStackTrace();
                         }
-                        String nickname = messageParts.get(2);
-                        this.nickname = nickname;
-                        this.setLoggedIn(true);
-                        //app.loggedIn = true;
-                        app.confirmLogin();
-                        break;
-                    default:
-                        break;
-                }
-                // handle the Okay
-                break;
-            default:
-                System.out.println("Could not comprehend what the Server was sending: " + pMessage);
-                break;
+                    }else {
+                        System.out.println("Could not comprehend what the Server was sending: " + pMessage);
+                    }
+
+                    break;
+            }
         }
-
+        else {
+            if (pMessage.equalsIgnoreCase(".")){
+                // message has ended
+                this.isReadingChat = false;
+                return;
+            }else {
+                // get the message line by line from the Server
+            }
+        }
     }
-
-    /*
-        TODO:
-        - Add functionality by building methods in the Client
-        - Add the functionality to Login
-        - Add the functionality to Leave a server
-        - Add the functionality to reconnect to a Server
-        - Add the functionality to Send a message -> Enum over all the types of recipients ?
-     */
 
     public void login(String username, String password) {
         this.send("LOGIN " + username + " " + password);

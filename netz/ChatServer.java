@@ -207,12 +207,15 @@ public class ChatServer extends Server {
                     break;
                 }
                 // Check if Command is long enough
-                if (messageParts.size() < 3){
-                    this.send(pClientIP, pClientPort, "-ERR 400 Usage: SEND <@gm / @pm / @all> < groupname / username> <message>");
+                if (messageParts.size() < 4){
+                    this.send(pClientIP, pClientPort, "-ERR 400 Usage: SEND <@gm / @pm / @all> <[channelID]> < groupname / username> <message>");
                     break;
                 }
+
                 // Prefix
                 String prefix = "<" + sendUser.getNickname() + ">: ";
+
+                String channelID = messageParts.get(2);
 
                 // Go through types of messages
                 switch (messageParts.get(1).toUpperCase()) {
@@ -221,15 +224,15 @@ public class ChatServer extends Server {
                         break;
                     case "@PM":
                         // Private Message
-                        if (messageParts.size() < 4) {
+                        if (messageParts.size() < 5) {
                             this.send(pClientIP, pClientPort, "-ERR 400 Not Enough Parameters.");
-                            this.send(pClientIP, pClientPort, "Usage: SEND <@gm / @pm / @all> < groupname / username> <message>");
+                            this.send(pClientIP, pClientPort, "Usage: SEND <@gm / @pm / @all> <[channelID]> < groupname / username> <message>");
                             break;
                         }
                         // Check if a username was added
                         User fromUser = getConnectedUser(pClientIP, pClientPort);
                         User toUser = null;
-                        String toUsername = messageParts.get(2);
+                        String toUsername = messageParts.get(3);
                         // check if the user exists
                         toUser = getUserByName(toUsername);
                         if (toUser == null) {
@@ -248,15 +251,14 @@ public class ChatServer extends Server {
                         for (int i = 3; i < messageParts.size(); i++){
                             privateMsg.append(messageParts.get(i)).append(" ");
                         }
-
-                        this.send(toUser.getIpAddress(), toUser.getPort(),prefix  + privateMsg.toString());
+                        this.send(toUser.getIpAddress(), toUser.getPort(),channelID + prefix + privateMsg.toString());
                         break;
                     case "@ALL":
                         StringBuilder allMsg = new StringBuilder();
-                        for (int i = 2; i < messageParts.size(); i++){
+                        for (int i = 3; i < messageParts.size(); i++){
                             allMsg.append(messageParts.get(i)).append(" ");
                         }
-                        this.sendToAll(prefix + allMsg.toString());
+                        this.sendToAll(channelID + prefix + allMsg.toString());
 
                         break;
                     default:
@@ -266,14 +268,25 @@ public class ChatServer extends Server {
 
                 break;
             case "ARCHIVE":
-                // Check for the Permissions of the User if they may read the messages
+                // TODO: Check for the Permissions of the User if they may read the messages
+                // Check what chat they want to read -> Channel id
+                //
+                if (messageParts.size() < 2){
+                    this.send(pClientIP, pClientPort, "-ERR 400 Usage: ARCHIVE <channelID>");
+                    return;
+                }
+
+                // check for permissions
+
+                // TODO: query the "Databse" -> Json file, for the channel
+
                 this.send(pClientIP, pClientPort, "-ERR 500 Not Implemented yet!");
                 break;
             default:
-                this.send(pClientIP, pClientPort, "-ERR 404 Unbekannter Befehl: " + messageParts.get(0));
-                this.send(pClientIP, pClientPort, "Folgende Befehle sind verfügbar: ");
-                this.send(pClientIP, pClientPort, "quit: Beendet die Verbindung");
-                this.send(pClientIP, pClientPort, "help: Zeigt diese Hilfe an");
+                this.send(pClientIP, pClientPort, "-ERR 404 Unbekannter Befehl: " + messageParts.getFirst() + "\n" +
+                        "Folgende Befehle sind verfügbar: \n" +
+                        "quit: Ends connection\n" +
+                        "help: shows this help\n");
                 break;
         }
     }

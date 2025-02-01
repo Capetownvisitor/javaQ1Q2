@@ -7,11 +7,14 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
+import netz.Channel;
 import netz.ChatClient;
 import netz.Client;
 import netz.ClientGUI.Controller.ChatController;
 import netz.ClientGUI.Controller.ConnectionController;
 import netz.ClientGUI.Controller.LoginController;
+import netz.Message;
+import org.json.JSONException;
 
 import java.io.IOException;
 import java.util.Objects;
@@ -106,7 +109,7 @@ public class ChatApplication extends Application {
         }
     }
 
-    private void initChat() {
+    private void initChat() throws JSONException {
         String username = this.client.getNickname();
         String serverIP = this.client.getServerIP();
         int serverPort = this.client.getServerPort();
@@ -141,6 +144,16 @@ public class ChatApplication extends Application {
             });
         } catch(Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    public void send(String message) {
+        this.client.send(message);
+    }
+
+    public void recieveMessage(Message message, int channelID) {
+        if (this.chatController != null) {
+            this.chatController.receiveMessage(message, channelID);
         }
     }
 

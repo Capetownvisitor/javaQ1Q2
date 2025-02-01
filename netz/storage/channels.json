@@ -1,0 +1,42 @@
+[
+    {
+        "addresses": [],
+        "name": "General",
+        "messages": [
+            {
+                "date": 1738448156364,
+                "sender": "Jonass",
+                "body": "Halloo"
+            },
+            {
+                "date": 1738449109223,
+                "sender": "Jonass",
+                "body": "Why is only the first message saved = ??"
+            },
+            {
+                "date": 1738449125859,
+                "sender": "Jonass",
+                "body": "hi"
+            }
+        ],
+        "id": 0,
+        "type": "GLOBAL"
+    },
+    {
+        "addresses": [{"name": "Jackpie"}],
+        "name": "Jackpie",
+        "messages": [],
+        "id": 1,
+        "type": "PRIVATE"
+    },
+    {
+        "addresses": [
+            {"name": "Jackpie"},
+            {"name": "Jonass"}
+        ],
+        "name": "Group",
+        "messages": [],
+        "id": 2,
+        "type": "GROUP"
+    }
+]
