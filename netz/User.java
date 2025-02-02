@@ -1,5 +1,8 @@
 package netz;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 
 public class User {
@@ -28,6 +31,30 @@ public class User {
         this.port = port;
         this.state = state;
         this.permissions = permissions;
+    }
+
+    public User(JSONObject jsonObject) throws JSONException {
+        this.id = jsonObject.getInt("id");
+        this.nickname = jsonObject.getString("nickname");
+        this.pw = jsonObject.getString("password");
+        this.ipAddress = jsonObject.getString("ipAddress");
+        this.port = jsonObject.getInt("port");
+        this.state = jsonObject.getInt("state");
+        // TODO: Add permissions
+    }
+
+    public JSONObject toJson() throws JSONException {
+        JSONObject jsonObject = new JSONObject();
+
+        jsonObject.put("id", this.getId());
+        jsonObject.put("nickname", this.getNickname());
+        jsonObject.put("password", this.getPassword());
+        jsonObject.put("ipAddress", this.getIpAddress());
+        jsonObject.put("port", this.getPort());
+        jsonObject.put("state", this.getState());
+        // TODO: Add permissions
+
+        return jsonObject;
     }
 
     public int getState() {

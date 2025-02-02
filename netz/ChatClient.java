@@ -98,6 +98,22 @@ public class ChatClient extends Client{
                             //app.loggedIn = true;
                             app.confirmLogin();
                             break;
+                        case "202":
+                            // OK Message recieved -> Reload the given chat
+                            if (messageParts.size() < 3) {
+                                System.out.println("Server response not informational enough, missing channel id: " + pMessage);
+                                return;
+                            }
+                            System.out.println("DEBUG: Message recieved: " + pMessage);
+                            // reload the channel
+                            try {
+                                int id = Integer.parseInt(NameExtractor.extractChannelID(messageParts.get(2)));
+                                app.recieveMessage(id);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+
+                            break;
                         default:
                             break;
                     }
@@ -105,12 +121,21 @@ public class ChatClient extends Client{
                     break;
                 default:
                     // check if it was a Message
-                    if (messageParts.size() > 2 && messageParts.get(0).startsWith("<") && messageParts.get(0).endsWith(">:")) {
+                    /*
+                    if (messageParts.size() < 3) {
+                        System.out.println("Message too short, Could not comprehend what the Server was sending: " + pMessage);
+                        return;
+                    }
+
+
+                    String namePart = messageParts.get(1);
+
+                    if (namePart.startsWith("<") && namePart.endsWith(">:")) {
                         // Info: get Channel -> [channelID] <nickname>: message
                         try {
 
                             // Get the name from the message
-                            String senderName = NameExtractor.extractName(messageParts.get(0));
+                            String senderName = NameExtractor.extractName(namePart);
 
                             // Get the Message from the Text
                             StringBuilder text = new StringBuilder();
@@ -120,7 +145,7 @@ public class ChatClient extends Client{
                             Message message = new Message(senderName, text.toString());
 
                             // Get the channel id from the message
-                            String channelIDString = NameExtractor.extractChannelID(messageParts.get(1));
+                            String channelIDString = NameExtractor.extractChannelID(messageParts.getFirst());
                             int channelID = Integer.parseInt(channelIDString);
 
                             app.recieveMessage(message, channelID);
@@ -131,6 +156,8 @@ public class ChatClient extends Client{
                         System.out.println("Could not comprehend what the Server was sending: " + pMessage);
                     }
 
+                     */
+                    System.out.println("Could not comprehend what the Server was sending: " + pMessage);
                     break;
             }
         }

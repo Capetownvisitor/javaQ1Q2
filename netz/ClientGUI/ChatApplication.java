@@ -73,9 +73,6 @@ public class ChatApplication extends Application {
                 LoginController logController = loader.getController();
                 logController.setMainApp(this);
             });
-            // FIXME:
-            // LoginController logController = loader.getController();
-            // logController.setMainApp(this);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -151,9 +148,9 @@ public class ChatApplication extends Application {
         this.client.send(message);
     }
 
-    public void recieveMessage(Message message, int channelID) {
+    public void recieveMessage(int channelID) {
         if (this.chatController != null) {
-            this.chatController.receiveMessage(message, channelID);
+            this.chatController.receiveMessage(channelID);
         }
     }
 

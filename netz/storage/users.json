@@ -1,0 +1,18 @@
+[
+    {
+        "password": "123",
+        "port": -1,
+        "nickname": "Jackpie",
+        "ipAddress": "none",
+        "id": 0,
+        "state": -1
+    },
+    {
+        "password": "passwort",
+        "port": -1,
+        "nickname": "Jonass",
+        "ipAddress": "none",
+        "id": 0,
+        "state": -1
+    }
+]

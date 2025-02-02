@@ -13,7 +13,7 @@ public class NameExtractor {
         }else throw new Exception("No match was found in the Name-String: + " + input);
     }
 
-    public static String extractChannelID(String input) throws Exception {
+    public static String extractChannelID(String input)  throws Exception{
         Pattern pattern = Pattern.compile("\\[(-?\\d+)]"); // Regex to capture the text inside []
         Matcher matcher = pattern.matcher(input);
 

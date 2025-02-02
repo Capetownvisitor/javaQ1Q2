@@ -1,6 +1,5 @@
 [
     {
-        "addresses": [],
         "name": "General",
         "messages": [
             {
@@ -17,26 +16,78 @@
                 "date": 1738449125859,
                 "sender": "Jonass",
                 "body": "hi"
+            },
+            {
+                "date": 1738498621811,
+                "sender": "Jonass",
+                "body": "Where is it ?? "
+            },
+            {
+                "date": 1738498646947,
+                "sender": "Jonass",
+                "body": "what "
+            },
+            {
+                "date": 1738498944953,
+                "sender": "Jonass",
+                "body": "work please ! "
+            },
+            {
+                "date": 1738498952176,
+                "sender": "Jonass",
+                "body": "Yes !?!? "
             }
         ],
         "id": 0,
-        "type": "GLOBAL"
+        "type": "GLOBAL",
+        "users": []
     },
     {
-        "addresses": [{"name": "Jackpie"}],
         "name": "Jackpie",
         "messages": [],
         "id": 1,
-        "type": "PRIVATE"
+        "type": "PRIVATE",
+        "users": [
+            {
+                "password": "123",
+                "port": -1,
+                "nickname": "Jackpie",
+                "ipAddress": "none",
+                "id": 0,
+                "state": -1
+            },
+            {
+                "password": "passwort",
+                "port": -1,
+                "nickname": "Jonass",
+                "ipAddress": "none",
+                "id": 0,
+                "state": -1
+            }
+        ]
     },
     {
-        "addresses": [
-            {"name": "Jackpie"},
-            {"name": "Jonass"}
-        ],
         "name": "Group",
         "messages": [],
         "id": 2,
-        "type": "GROUP"
+        "type": "GROUP",
+        "users": [
+            {
+                "password": "123",
+                "port": -1,
+                "nickname": "Jackpie",
+                "ipAddress": "none",
+                "id": 0,
+                "state": -1
+            },
+            {
+                "password": "passwort",
+                "port": -1,
+                "nickname": "Jonass",
+                "ipAddress": "none",
+                "id": 0,
+                "state": -1
+            }
+        ]
     }
 ]

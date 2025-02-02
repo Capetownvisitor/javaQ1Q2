@@ -1,20 +1,17 @@
 package netz.ClientGUI.Controller;
 
-import javafx.beans.InvalidationListener;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import netz.Channel;
-import netz.ChannelSaver;
+import netz.ChannelStorage;
 import netz.ClientGUI.ChatApplication;
 import netz.Message;
 import org.json.JSONArray;
 import org.json.JSONException;
-
-import java.util.*;
 
 public class ChatController {
 
@@ -48,22 +45,8 @@ public class ChatController {
 
     private void initChannelList() throws JSONException {
         // Fill the Channel List
-        /*
-        Channel c1 = new Channel(0, "General", Channel.ChannelType.GLOBAL);
-        Channel c2 = new Channel(1, "Jackpie", Channel.ChannelType.PRIVATE);
-        Channel c3 = new Channel(2, "Group", Channel.ChannelType.GROUP);
 
-        c2.addAddresse("Jackpie");
-
-        c3.addAddresse("Jackpie");
-        c3.addAddresse("Jonass");
-
-        channels.add(c1);
-        channels.add(c2);
-        channels.add(c3);
-         */
-
-        JSONArray jsonArray = ChannelSaver.readChannels();
+        JSONArray jsonArray = ChannelStorage.readChannels();
 
         for (int i = 0; i<jsonArray.length(); i++){
             this.channels.add(new Channel(jsonArray.getJSONObject(i)));
@@ -84,7 +67,6 @@ public class ChatController {
         this.channel = newChannel;
         // Update the main chat area with the selected channel's messages
         this.mainTextArea.clear();
-        // TODO: Add all texts of the new Channel to Text area
         updateMessages();
     }
 
@@ -97,21 +79,26 @@ public class ChatController {
     }
 
     public void updateMessages(){
-        this.mainTextArea.clear();
-        for (Message m: this.channel.getMessages()){
-            this.mainTextArea.appendText(m.toString() + "\n");
-        }
+        Platform.runLater(() -> {
+            this.mainTextArea.clear();
+            for (Message m: this.channel.getMessages()){
+                this.mainTextArea.appendText(m.toString() + "\n");
+            }
+        });
     }
 
     // -----------------------------------------------------------------------------------------------------------------
 
-    public void receiveMessage(Message message, int channelID) {
-        // Add the Message to the right channel
+    public void receiveMessage(int channelID) {
+        // if the message was recieved on the current channel, reload it.
         for (Channel i: this.channels){
             if (i.getChannelID() == channelID) {
-                i.addMessage(message);
+                if (i.equals(this.channel)){
+                    this.updateMessages();
+                }
             }
         }
+        updateMessages();
     }
 
     // -----------------------------------------------------------------------------------------------------------------
@@ -124,7 +111,7 @@ public class ChatController {
     public void onSend(ActionEvent event) {
         // handle the press of the Send button
         String stringBuilder;
-        // FIXME: Optimize pls
+        /*
         if (channel.getType() == Channel.ChannelType.PRIVATE){
             stringBuilder = "SEND" +
                     " " +
@@ -134,7 +121,7 @@ public class ChatController {
                     this.channel.getChannelID() +
                     "]" +
                     " " +
-                    this.channel.getAddresses().getFirst() +
+                    this.channel.getUsers().getFirst() +
                     " " +
                     // append message
                     textField.getCharacters().toString();
@@ -162,9 +149,15 @@ public class ChatController {
                     // append message
                     textField.getCharacters().toString();
         }
+         */
+
+        stringBuilder = "SEND " + "[" + channel.getChannelID() + "]" + " " + textField.getCharacters().toString();
+
+        System.out.println("DEBUG: sent message: " + stringBuilder);
+
         this.mainApp.send(stringBuilder);
         textField.clear();
-        ChannelSaver.saveChannels(this.channelList);
+        ChannelStorage.saveChannels(this.channelList);
         updateMessages();
     }
 
