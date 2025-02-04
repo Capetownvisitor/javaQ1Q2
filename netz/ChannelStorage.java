@@ -56,22 +56,30 @@ public class ChannelStorage {
             return;
         }
 
-        try ( FileWriter fileWriter = new FileWriter(file, false)) {
+
+        try {
+            //System.out.println("1 DEBUG!!!: " + Files.readString(file.toPath()));
             String content = Files.readString(file.toPath());
-            JSONArray arr = new JSONArray(content);
 
-            for (int i = 0; i<arr.length();i++){
-                if (((JSONObject) arr.get(i)).getInt("id") == channelID) {
-                    // Channel found ->  Adding message
-                    ((JSONObject) arr.get(i)).getJSONArray("messages").put(message.toJson());
+            try (FileWriter fileWriter = new FileWriter(file, false)) {
+
+                // FIXME: Someohow whenever trying to read the json file here,
+
+                JSONArray arr = new JSONArray(content);
+
+                for (int i = 0; i<arr.length();i++){
+                    if (((JSONObject) arr.get(i)).getInt("id") == channelID) {
+                        // Channel found ->  Adding message
+                        ((JSONObject) arr.get(i)).getJSONArray("messages").put(message.toJson());
+                    }
                 }
+                fileWriter.write(arr.toString(4)); // Pretty print with indentation
+                fileWriter.flush();
+            } catch (JSONException | IOException e) {
+                e.printStackTrace();
             }
-
-            fileWriter.write(arr.toString(4)); // Pretty print with indentation
-            fileWriter.flush();
-
-        } catch (JSONException | IOException e) {
-            e.printStackTrace();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -83,7 +91,7 @@ public class ChannelStorage {
             return new JSONObject(); // Return empty object if file doesn't exist
         }
 
-        try ( FileReader fileReader = new FileReader(file)) {
+        try {
             String content = Files.readString(file.toPath());
             JSONArray arr = new JSONArray(content);
 

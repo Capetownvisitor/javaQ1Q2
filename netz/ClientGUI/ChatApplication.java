@@ -145,7 +145,8 @@ public class ChatApplication extends Application {
     }
 
     public void send(String message) {
-        this.client.send(message);
+        //System.out.println("DEBUG: chatapp send: " + message);
+        this.client.sendMessage(message);
     }
 
     public void recieveMessage(int channelID) {

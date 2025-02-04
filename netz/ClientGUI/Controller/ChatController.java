@@ -8,10 +8,12 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import netz.Channel;
 import netz.ChannelStorage;
+import netz.ChatServer;
 import netz.ClientGUI.ChatApplication;
 import netz.Message;
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 public class ChatController {
 
@@ -79,6 +81,17 @@ public class ChatController {
     }
 
     public void updateMessages(){
+
+        JSONObject jsonObject = ChannelStorage.retrieveChannel(channel.getChannelID());
+
+        try {
+            Channel c = new Channel(jsonObject);
+            this.channel = c;
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+
         Platform.runLater(() -> {
             this.mainTextArea.clear();
             for (Message m: this.channel.getMessages()){
@@ -110,54 +123,22 @@ public class ChatController {
 
     public void onSend(ActionEvent event) {
         // handle the press of the Send button
-        String stringBuilder;
-        /*
-        if (channel.getType() == Channel.ChannelType.PRIVATE){
-            stringBuilder = "SEND" +
-                    " " +
-                    this.channel.getType().getPrefix() +
-                    " " +
-                    "[" +
-                    this.channel.getChannelID() +
-                    "]" +
-                    " " +
-                    this.channel.getUsers().getFirst() +
-                    " " +
-                    // append message
-                    textField.getCharacters().toString();
-        }else if (channel.getType() == Channel.ChannelType.GLOBAL) {
-            stringBuilder = "SEND" +
-                    " " +
-                    this.channel.getType().getPrefix() +
-                    " " +
-                    "[" +
-                    this.channel.getChannelID() +
-                    "]" +
-                    " " +
-                    // append message
-                    textField.getCharacters().toString();
-        }else {
-            // FIXME: Group Messages
-            stringBuilder = "SEND" +
-                    " " +
-                    this.channel.getType().getPrefix() +
-                    " " +
-                    "[" +
-                    this.channel.getChannelID() +
-                    "]" +
-                    " " +
-                    // append message
-                    textField.getCharacters().toString();
-        }
-         */
 
-        stringBuilder = "SEND " + "[" + channel.getChannelID() + "]" + " " + textField.getCharacters().toString();
+        String messageText = textField.getCharacters().toString();
 
-        System.out.println("DEBUG: sent message: " + stringBuilder);
+        String stringBuilder = "SEND " + "[" + channel.getChannelID() + "]" + " " + messageText;
+
+        //System.out.println("DEBUG: Controller sent message: " + stringBuilder);
 
         this.mainApp.send(stringBuilder);
         textField.clear();
-        ChannelStorage.saveChannels(this.channelList);
+
+        Message message = new Message(usernameLabel.getText(), messageText);
+
+        // Add the Message to the "Database"
+        ChannelStorage.addMessage(message, channel.getChannelID());
+
+        //ChannelStorage.saveChannels(this.channelList);
         updateMessages();
     }
 

@@ -46,6 +46,9 @@ public class ChatClient extends Client{
                         System.out.println("Server response not informational enough: " + pMessage);
                         return;
                     }
+
+                    System.out.println(pMessage);
+
                     switch (messageParts.get(1)) {
                         case "400":
                             //info wrong amount of parameters
@@ -170,6 +173,11 @@ public class ChatClient extends Client{
                 // get the message line by line from the Server
             }
         }
+    }
+
+    public void sendMessage(String pMessage){
+        //System.out.println("DEBUG: ChatClient send: " + pMessage);
+        this.send(pMessage);
     }
 
     public void login(String username, String password) {

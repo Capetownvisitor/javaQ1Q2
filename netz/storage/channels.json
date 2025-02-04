@@ -36,6 +36,36 @@
                 "date": 1738498952176,
                 "sender": "Jonass",
                 "body": "Yes !?!? "
+            },
+            {
+                "date": 1738607611467,
+                "sender": "Jonass",
+                "body": "da"
+            },
+            {
+                "date": 1738607672163,
+                "sender": "Jonass",
+                "body": "wow"
+            },
+            {
+                "date": 1738608606011,
+                "sender": "Jonass",
+                "body": "ok..."
+            },
+            {
+                "date": 1738608946924,
+                "sender": "Jonass",
+                "body": "try"
+            },
+            {
+                "date": 1738661805130,
+                "sender": "Jonass",
+                "body": "send "
+            },
+            {
+                "date": 1738661816059,
+                "sender": "Jonass",
+                "body": "send it"
             }
         ],
         "id": 0,
@@ -44,7 +74,23 @@
     },
     {
         "name": "Jackpie",
-        "messages": [],
+        "messages": [
+            {
+                "date": 1738608953401,
+                "sender": "Jonass",
+                "body": "maybe ?"
+            },
+            {
+                "date": 1738608966036,
+                "sender": "Jonass",
+                "body": "YES!!!!!!"
+            },
+            {
+                "date": 1738661849336,
+                "sender": "Jonass",
+                "body": "hallo JAckie"
+            }
+        ],
         "id": 1,
         "type": "PRIVATE",
         "users": [
@@ -68,7 +114,11 @@
     },
     {
         "name": "Group",
-        "messages": [],
+        "messages": [{
+            "date": 1738661860117,
+            "sender": "Jonass",
+            "body": "Grüp tescht"
+        }],
         "id": 2,
         "type": "GROUP",
         "users": [

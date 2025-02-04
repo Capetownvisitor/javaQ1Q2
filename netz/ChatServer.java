@@ -221,6 +221,8 @@ public class ChatServer extends Server {
                 this.send(pClientIP, pClientPort, "-ERR 500 Not Implemented yet!");
                 break;
             case "SEND":
+                System.out.println("DEBUG: Message recieved: " + pMessage);
+
                 // Check if User is Connected / Logged In
                 if (user == null || user.getState() < 2) {
                     this.send(pClientIP, pClientPort, "-ERR 402 You have to be logged in to use this feature.");
@@ -235,7 +237,7 @@ public class ChatServer extends Server {
                 // Prefix
                 //String prefix = "<" + sendUser.getNickname() + ">:" + " ";
 
-                String channelID = messageParts.get(2) + " ";
+                String channelID = messageParts.get(2);
 
                 // INFO: New way of sending messages
                 // info => SEND <[channelID]> <message>
@@ -243,40 +245,26 @@ public class ChatServer extends Server {
                     this.send(pClientIP, pClientPort, "-ERR 400 Not Enough Parameters. // Usage => SEND <[channelID]> <message> ");
                     return;
                 }
-
-                System.out.println("DEBUG: Message recieved: " + pMessage);
-
                 try {
                     String idString = NameExtractor.extractChannelID(channelID);
                     int id = Integer.parseInt(idString);
-
-                    // build message
-                    StringBuilder privateMsg = new StringBuilder();
-                    for (int i = 3; i < messageParts.size(); i++){
-                        privateMsg.append(messageParts.get(i)).append(" ");
-                    }
-
-                    Message message = new Message(user.getNickname(), privateMsg.toString());
-
-                    // Add the Message to the "Database"
-                    ChannelStorage.addMessage(message, id);
 
                     // Now send the message to all recipients
                     JSONObject channelJson = ChannelStorage.retrieveChannel(id);
                     assert channelJson != null;
                     Channel c = new Channel(channelJson);
 
+
+
                     if (c.getType() == Channel.ChannelType.GLOBAL) {
-                        this.sendToAll("+OK " + channelID + "Message recieved. Reload on client.");
+                        this.sendToAll("+OK 202 " + channelID + " Message recieved. Reload on client.");
                     }else {
                         for (User u: c.getUsers()){
-                            this.send(u.getIpAddress(), u.getPort(), "+OK " + channelID + "Message recieved. Reload on client.");
+                            this.send(u.getIpAddress(), u.getPort(), "+OK 202 " + channelID + "Message recieved. Reload on client.");
                         }
                     }
-
-
-
                 }catch (Exception e){
+                    System.out.println("Errror Occured: " + e.getMessage());
                     e.printStackTrace();
                 }
 
@@ -355,6 +343,8 @@ public class ChatServer extends Server {
                         "Folgende Befehle sind verfügbar: \n" +
                         "quit: Ends connection\n" +
                         "help: shows this help\n");
+
+                System.out.println("Couldn't understand: " + pMessage);
                 break;
         }
     }
